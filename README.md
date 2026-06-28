@@ -107,7 +107,7 @@ http://localhost:8000
 En usuario escribe:
 
 ```txt
-' OR '1'='1' -- 
+' OR '1'='1' -- -    ó tambien puedes usar    ' OR 1=1 # 
 ```
 
 En contraseña escribe:
