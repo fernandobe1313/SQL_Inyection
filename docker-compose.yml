@@ -1,0 +1,62 @@
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: sqli_lab_mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root123
+      MYSQL_USER: labuser
+      MYSQL_PASSWORD: labpass
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot123"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  app_vulnerable:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+    container_name: sqli_app_vulnerable_mysql
+    restart: unless-stopped
+    ports:
+      - "8000:80"
+    volumes:
+      - ./01_app_vulnerable/public:/var/www/html
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_NAME: sqli_vulnerable
+      DB_USER: labuser
+      DB_PASS: labpass
+
+  app_corregida:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+    container_name: sqli_app_corregida_mysql
+    restart: unless-stopped
+    ports:
+      - "8001:80"
+    volumes:
+      - ./02_app_corregida/public:/var/www/html
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_NAME: sqli_corregida
+      DB_USER: labuser
+      DB_PASS: labpass
+
+volumes:
+  mysql_data:
